@@ -5,17 +5,18 @@ import (
 	"net/http"
 
 	"github.com/gabrielteiga/startup-rush/api/routes"
+	"github.com/gabrielteiga/startup-rush/configs"
 )
 
-const SERVER_PORT = ":8080"
+var PORT = ":" + configs.PORT
 
 func Start() {
 	mux := http.NewServeMux()
 
 	initEndpoints(mux, routes.Provide())
 
-	log.Printf("Starting server in the %s port...", SERVER_PORT)
-	log.Fatal(http.ListenAndServe(SERVER_PORT, mux))
+	log.Printf("Starting server in the %s port...", PORT)
+	log.Fatal(http.ListenAndServe(PORT, mux))
 }
 
 func initEndpoints(mux *http.ServeMux, controllers map[string]routes.RouteInterface) {
