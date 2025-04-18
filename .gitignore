@@ -1,0 +1,5 @@
+# Build
+/tmp
+
+# Dev files
+.air.toml
