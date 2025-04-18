@@ -13,13 +13,8 @@ import (
 
 const HEALTH_ENDPOINT = "/api/health"
 
-type ResponseHealth struct {
-	Status  string `json:"status"`
-	Message string `json:"message"`
-}
-
 func TestHealthWorks(t *testing.T) {
-	var resp *ResponseHealth
+	var resp *health.ResponseHealth
 
 	req := httptest.NewRequest(http.MethodGet, HEALTH_ENDPOINT, nil)
 	rec := httptest.NewRecorder()
@@ -30,7 +25,7 @@ func TestHealthWorks(t *testing.T) {
 	assert.NoError(t, err)
 	json.Unmarshal(body, &resp)
 
-	expected := &ResponseHealth{
+	expected := &health.ResponseHealth{
 		Status:  "Success",
 		Message: "The app is healthy!",
 	}
