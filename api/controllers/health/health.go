@@ -1,8 +1,9 @@
 package health
 
 import (
-	"encoding/json"
 	"net/http"
+
+	"github.com/gabrielteiga/startup-rush/api/responses"
 )
 
 type HealthController struct {
@@ -18,14 +19,7 @@ type ResponseHealth struct {
 }
 
 func (hc *HealthController) Handle(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	body := &ResponseHealth{
-		Message: "The app is healthy!",
-		Status:  "Success",
-	}
-
-	if err := json.NewEncoder(w).Encode(body); err != nil {
+	if err := responses.JSONSuccessResponse[any](w, "The app is healthy!", nil); err != nil {
 		http.Error(w, "Error during the response creation", http.StatusInternalServerError)
 	}
 }
