@@ -9,11 +9,6 @@ import (
 
 const SERVER_PORT = ":8080"
 
-type ResponseHealth struct {
-	Message string `json:"message"`
-	Status  string `json:"status"`
-}
-
 func Start() {
 	mux := http.NewServeMux()
 

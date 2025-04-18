@@ -13,11 +13,6 @@ func NewHealthController() *HealthController {
 	return &HealthController{}
 }
 
-type ResponseHealth struct {
-	Message string `json:"message"`
-	Status  string `json:"status"`
-}
-
 func (hc *HealthController) Handle(w http.ResponseWriter, r *http.Request) {
 	if err := responses.JSONSuccessResponse[any](w, "The app is healthy!", nil); err != nil {
 		http.Error(w, "Error during the response creation", http.StatusInternalServerError)
