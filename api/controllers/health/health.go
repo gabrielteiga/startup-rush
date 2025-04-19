@@ -6,8 +6,7 @@ import (
 	"github.com/gabrielteiga/startup-rush/api/responses"
 )
 
-type HealthController struct {
-}
+type HealthController struct{}
 
 func NewHealthController() *HealthController {
 	return &HealthController{}

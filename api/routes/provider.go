@@ -6,6 +6,6 @@ import (
 
 func Provide() map[string]RouteInterface {
 	return map[string]RouteInterface{
-		"/api/health": health.NewHealthController(),
+		"GET /api/health": health.NewHealthController(),
 	}
 }
