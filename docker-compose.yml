@@ -6,3 +6,15 @@ services:
       - "8080:8080"
     env_file:
       - server.env
+    depends_on:
+      - database
+  database:
+    image: 'mysql:8.0'
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: toor
+      MYSQL_DATABASE: startup-rush
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./docker/data:/var/lib/mysql

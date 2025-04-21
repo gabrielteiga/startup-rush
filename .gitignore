@@ -3,3 +3,6 @@
 
 # Dev files
 .air.toml
+
+# Docker database data
+/docker/data

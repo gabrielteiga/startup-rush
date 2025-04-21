@@ -8,7 +8,7 @@ import (
 	"github.com/gabrielteiga/startup-rush/configs"
 )
 
-var PORT = ":" + configs.PORT
+var PORT = ":" + configs.APP_PORT
 
 func Start() {
 	mux := http.NewServeMux()
