@@ -1,7 +1,6 @@
 package startup_controller
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gabrielteiga/startup-rush/api/responses"
@@ -23,6 +22,6 @@ func NewListStartup(startupService *services.StartupService) *ListStartup {
 
 func (sc *ListStartup) Handle(w http.ResponseWriter, r *http.Request) {
 	startups := sc.StartupService.List()
-	log.Println(startups)
+
 	responses.JSONSuccessResponse(w, http.StatusOK, LIST_SUCCESSFULLY_MESSAGE, &startups)
 }
