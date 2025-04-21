@@ -17,7 +17,7 @@ type DBGormAdapter struct {
 
 func InitConnection() *DBGormAdapter {
 	dsn := fmt.Sprintf(
-		"%s:%s@tcp(%s:%s)/%s",
+		"%s:%s@tcp(%s:%s)/%s?parseTime=true",
 		configs.DB_USER,
 		configs.DB_PASSWORD,
 		configs.DB_DOMAIN,

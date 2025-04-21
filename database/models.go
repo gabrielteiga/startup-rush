@@ -8,7 +8,6 @@ import (
 
 type Startup struct {
 	gorm.Model
-	ID         uint      `gorm:"primaryKey"`
 	Name       string    `gorm:"not null"`
 	Slogan     string    `gorm:"not null"`
 	Foundation time.Time `gorm:"not null"`
@@ -18,7 +17,6 @@ type Startup struct {
 
 type Tournament struct {
 	gorm.Model
-	ID       uint `gorm:"primaryKey"`
 	Finished bool `gorm:"not null;default:false"`
 
 	ChampionID *uint
@@ -28,7 +26,6 @@ type Tournament struct {
 
 type StartupsTournaments struct {
 	gorm.Model
-	ID           uint `gorm:"primaryKey"`
 	StartupID    uint `gorm:"not null"`
 	TournamentID uint `gorm:"not null"`
 	Score        uint `gorm:"not null;default:0"`
@@ -39,7 +36,6 @@ type StartupsTournaments struct {
 
 type Battle struct {
 	gorm.Model
-	ID                uint `gorm:"primaryKey"`
 	TournamentID      uint `gorm:"not null"`
 	Startup1ID        uint `gorm:"not null"`
 	Startup2ID        uint `gorm:"not null"`
@@ -60,14 +56,12 @@ type Battle struct {
 
 type Events struct {
 	gorm.Model
-	ID    uint   `gorm:"primaryKey"`
 	Name  string `gorm:"not null"`
 	Score uint   `gorm:"not null"`
 }
 
 type BattlesEvents struct {
 	gorm.Model
-	ID        uint `gorm:"primaryKey"`
 	BattleID  uint `gorm:"not null"`
 	EventID   uint `gorm:"not null"`
 	StartupID uint `gorm:"not null"`
