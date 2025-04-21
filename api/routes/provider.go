@@ -19,6 +19,6 @@ func Provide() map[string]RouteInterface {
 
 	return map[string]RouteInterface{
 		"GET /api/health":    health.NewHealthController(),
-		"POST /api/startups": startup_controller.NewStartupController(StartupService),
+		"POST /api/startups": startup_controller.NewCreateStartup(StartupService),
 	}
 }

@@ -14,17 +14,17 @@ import (
 const CREATED_SUCCESSFULLY_MESSAGE string = "Startup has been created successfully"
 const CREATED_ERROR_MESSAGE string = "Something went wrong with the startup creation"
 
-type StartupController struct {
+type CreateStartup struct {
 	StartupService *services.StartupService
 }
 
-func NewStartupController(startupService *services.StartupService) *StartupController {
-	return &StartupController{
+func NewCreateStartup(startupService *services.StartupService) *CreateStartup {
+	return &CreateStartup{
 		StartupService: startupService,
 	}
 }
 
-func (sc *StartupController) Handle(w http.ResponseWriter, r *http.Request) {
+func (sc *CreateStartup) Handle(w http.ResponseWriter, r *http.Request) {
 	var request *requests.RequestStartupCreate
 
 	json.NewDecoder(r.Body).Decode(&request)

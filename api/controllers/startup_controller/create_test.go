@@ -87,7 +87,7 @@ func createStartupWorks(t *testing.T, request *requests.RequestStartupCreate, ex
 	req := httptest.NewRequest(http.MethodPost, CREATE_STARTUP_ENDPOINT, bytes.NewReader(bodyRequest))
 	rec := httptest.NewRecorder()
 
-	startup_controller.NewStartupController(StartupService).Handle(rec, req)
+	startup_controller.NewCreateStartup(StartupService).Handle(rec, req)
 
 	err := json.NewDecoder(rec.Body).Decode(&resp)
 	assert.NoError(t, err)
