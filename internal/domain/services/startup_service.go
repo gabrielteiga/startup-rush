@@ -19,3 +19,8 @@ func NewStartupService(startupRepository startup_entity.IStartupRepository) *Sta
 func (ss *StartupService) Create(name, slogan string, foundation time.Time) *startup_entity.Startup {
 	return ss.StartupRepository.Create(name, slogan, foundation)
 }
+
+func (ss *StartupService) List() []*startup_entity.Startup {
+	startups := ss.StartupRepository.List()
+	return startups
+}

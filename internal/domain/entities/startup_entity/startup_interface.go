@@ -4,4 +4,5 @@ import "time"
 
 type IStartupRepository interface {
 	Create(name, slogan string, foundation time.Time) *Startup
+	List() []*Startup
 }

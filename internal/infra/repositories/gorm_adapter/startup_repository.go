@@ -32,3 +32,20 @@ func (sr *StartupGORMRepository) Create(name, slogan string, foundation time.Tim
 
 	return startup_entity.NewStartup(startup.ID, startup.Name, startup.Slogan, startup.Foundation)
 }
+
+func (sr *StartupGORMRepository) List() []*startup_entity.Startup {
+	var startups []database.Startup
+
+	err := sr.DB.Select("id, name, slogan, foundation").Find(&startups).Error
+	if err != nil {
+		return nil
+	}
+
+	var startupEntities []*startup_entity.Startup
+	for _, startupModel := range startups {
+		startup := startup_entity.NewStartup(startupModel.ID, startupModel.Name, startupModel.Slogan, startupModel.Foundation)
+		startupEntities = append(startupEntities, startup)
+	}
+
+	return startupEntities
+}
