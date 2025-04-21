@@ -49,3 +49,31 @@ func (sr *StartupGORMRepository) List() []*startup_entity.Startup {
 
 	return startupEntities
 }
+
+func (sr *StartupGORMRepository) FindByIDs(ids []uint) []*startup_entity.Startup {
+	var startups []database.Startup
+
+	err := sr.DB.Select("id, name, slogan, foundation").Where("id IN ?", ids).Find(&startups).Error
+	if err != nil {
+		return nil
+	}
+
+	var startupEntities []*startup_entity.Startup
+	for _, startupModel := range startups {
+		startup := startup_entity.NewStartup(startupModel.ID, startupModel.Name, startupModel.Slogan, startupModel.Foundation)
+		startupEntities = append(startupEntities, startup)
+	}
+
+	return startupEntities
+}
+
+func (sr *StartupGORMRepository) FindByID(id uint) *startup_entity.Startup {
+	var startup database.Startup
+
+	err := sr.DB.Select("id, name, slogan, foundation").Where("id = ?", id).First(&startup).Error
+	if err != nil {
+		return nil
+	}
+
+	return startup_entity.NewStartup(startup.ID, startup.Name, startup.Slogan, startup.Foundation)
+}
