@@ -7,6 +7,7 @@ import (
 	"github.com/gabrielteiga/startup-rush/api/controllers/tournament_controller"
 	"github.com/gabrielteiga/startup-rush/database"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/battle_entity"
+	"github.com/gabrielteiga/startup-rush/internal/domain/entities/battle_events_entity"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/event_entity"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/participations_entity"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/startup_entity"
@@ -18,14 +19,14 @@ import (
 var dbConn = database.InitConnection()
 
 var StartupRepository startup_entity.IStartupRepository = gorm_adapter.NewStartupGORMRepository(dbConn.DB)
-var StartupService *services.StartupService = services.NewStartupService(StartupRepository)
-
 var BattleRepository battle_entity.IBattleRepository = gorm_adapter.NewBattleGORMRepository(dbConn.DB)
 var ParticipationRepository participations_entity.IParticipationRepository = gorm_adapter.NewParticipationsGORMRepository(dbConn.DB)
 var EventRepository event_entity.IEventRepository = gorm_adapter.NewEventsGORMRepository(dbConn.DB)
-
 var TournamentRepository tournament_entity.ITournamentRepository = gorm_adapter.NewTournamentGORMRepository(dbConn.DB, ParticipationRepository, BattleRepository)
-var TournamentService *services.TournamentService = services.NewTournamentService(TournamentRepository, StartupRepository, BattleRepository, ParticipationRepository, EventRepository)
+var BattleEventsRepository battle_events_entity.IBattleEventsRepository = gorm_adapter.NewBattleEventGORMRepository(dbConn.DB)
+
+var StartupService *services.StartupService = services.NewStartupService(StartupRepository)
+var TournamentService *services.TournamentService = services.NewTournamentService(TournamentRepository, StartupRepository, BattleRepository, ParticipationRepository, EventRepository, BattleEventsRepository)
 
 func Provide() map[string]RouteInterface {
 	dbConn.Migrate()
@@ -42,5 +43,6 @@ func Provide() map[string]RouteInterface {
 		"GET /api/tournaments/start/":    tournament_controller.NewStartTournamentByID(TournamentService),
 		"GET /api/tournaments/startups/": startup_controller.NewGetStartupsByTournamentID(TournamentService, StartupService),
 		"GET /api/tournaments/battle/":   battle_controller.NewGetBattleByID(TournamentService),
+		"POST /api/tournaments/battle/":  battle_controller.NewBattleTournament(TournamentService),
 	}
 }

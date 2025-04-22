@@ -5,6 +5,7 @@ import (
 	"math/rand/v2"
 
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/battle_entity"
+	"github.com/gabrielteiga/startup-rush/internal/domain/entities/battle_events_entity"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/event_entity"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/participations_entity"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/startup_entity"
@@ -17,6 +18,7 @@ type TournamentService struct {
 	BattleRepository         battle_entity.IBattleRepository
 	ParticipationsRepository participations_entity.IParticipationRepository
 	EventRepository          event_entity.IEventRepository
+	BattleEventRepository    battle_events_entity.IBattleEventsRepository
 }
 
 func NewTournamentService(
@@ -25,6 +27,7 @@ func NewTournamentService(
 	battleRepository battle_entity.IBattleRepository,
 	participationsRepository participations_entity.IParticipationRepository,
 	eventRepository event_entity.IEventRepository,
+	battleEventRepository battle_events_entity.IBattleEventsRepository,
 ) *TournamentService {
 	return &TournamentService{
 		TournamentRepository:     tournamentRepository,
@@ -32,6 +35,7 @@ func NewTournamentService(
 		BattleRepository:         battleRepository,
 		ParticipationsRepository: participationsRepository,
 		EventRepository:          eventRepository,
+		BattleEventRepository:    battleEventRepository,
 	}
 }
 
@@ -147,4 +151,41 @@ func (ts *TournamentService) GetEvents() ([]*event_entity.Event, error) {
 		return nil, err
 	}
 	return events, nil
+}
+
+func (ts *TournamentService) Battle(battleID uint, events map[uint][]uint) (any, error) {
+	battle, err := ts.BattleRepository.FindByID(battleID)
+	if err != nil {
+		log.Println("Error finding battle:", err)
+		return nil, err
+	}
+
+	err = ts.registerAndCheckEvents(battle, events)
+	if err != nil {
+		log.Println("Error registering events:", err)
+		return nil, err
+	}
+
+	// We are using here the gorm model. Need to change this to the entity model.
+	battleDatabase, err := ts.BattleEventRepository.GetBattleDatabaseWithEvents(battle.ID)
+	if err != nil {
+		log.Println("Error finding battle:", err)
+		return nil, err
+	}
+
+	return battleDatabase, nil
+
+}
+
+func (ts *TournamentService) registerAndCheckEvents(battle *battle_entity.Battle, events map[uint][]uint) error {
+	for startupID, eventsIDs := range events {
+		for _, eventID := range eventsIDs {
+			_, err := ts.BattleEventRepository.Create(battle.ID, startupID, eventID)
+			if err != nil {
+				log.Println("Error creating battle event:", err)
+				return err
+			}
+		}
+	}
+	return nil
 }
