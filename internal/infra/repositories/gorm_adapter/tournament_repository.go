@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/gabrielteiga/startup-rush/database"
+	"github.com/gabrielteiga/startup-rush/internal/domain/entities/battle_entity"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/participations_entity"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/startup_entity"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/tournament_entity"
@@ -11,16 +12,20 @@ import (
 )
 
 type TournamentGORMRepository struct {
-	DB *gorm.DB
+	DB                       *gorm.DB
+	IParticipationRepository participations_entity.IParticipationRepository
+	IBattleRepository        battle_entity.IBattleRepository
 }
 
-func NewTournamentGORMRepository(db *gorm.DB) *TournamentGORMRepository {
+func NewTournamentGORMRepository(db *gorm.DB, participationRepository participations_entity.IParticipationRepository, battleRepository battle_entity.IBattleRepository) *TournamentGORMRepository {
 	return &TournamentGORMRepository{
-		DB: db,
+		DB:                       db,
+		IParticipationRepository: participationRepository,
+		IBattleRepository:        battleRepository,
 	}
 }
 
-func (sr *TournamentGORMRepository) Create(startups []*startup_entity.Startup) *tournament_entity.Tournament {
+func (sr *TournamentGORMRepository) Create(startups []*startup_entity.Startup) (*tournament_entity.Tournament, error) {
 	var tournament *database.Tournament
 	var participantsEntity []*participations_entity.Participation
 
@@ -46,15 +51,78 @@ func (sr *TournamentGORMRepository) Create(startups []*startup_entity.Startup) *
 				return err
 			}
 
-			participantsEntity = append(participantsEntity, participations_entity.NewParticipation(participant.ID, participant.Score, participant.StartupID, participant.TournamentID))
+			participantsEntity = append(participantsEntity, participations_entity.NewParticipation(participant.ID, participant.StartupID, participant.TournamentID, participant.Score))
 		}
 		return nil
 	})
 
 	if err != nil {
 		log.Println("Error creating tournament: ", err)
-		return nil
+		return nil, err
 	}
 
-	return tournament_entity.NewTournament(tournament.ID, tournament.Finished, tournament.ChampionID, participantsEntity)
+	return tournament_entity.NewTournament(tournament.ID, tournament.Finished, tournament.ChampionID, participantsEntity, nil), nil
+}
+
+func (sr *TournamentGORMRepository) List() ([]*tournament_entity.Tournament, error) {
+	var tournaments []database.Tournament
+	if err := sr.DB.
+		Preload("Startups").
+		Preload("Battles").
+		Preload("Battles.Startup1").
+		Preload("Battles.Startup2").
+		Preload("Battles.BattleEvents.Event").
+		Find(&tournaments).
+		Error; err != nil {
+		return nil, err
+	}
+
+	var tournamentsEntity []*tournament_entity.Tournament
+	for i := range tournaments {
+		participants, err := sr.IParticipationRepository.FindByTournamentID(tournaments[i].ID)
+		if err != nil {
+			log.Println("Error finding participants: ", err)
+			return nil, err
+		}
+
+		battles, err := sr.IBattleRepository.FindByTournamentID(tournaments[i].ID)
+		if err != nil {
+			log.Println("Error finding battles: ", err)
+			return nil, err
+		}
+
+		tournamentEntity := tournament_entity.NewTournament(
+			tournaments[i].ID,
+			tournaments[i].Finished,
+			tournaments[i].ChampionID,
+			participants,
+			battles,
+		)
+
+		tournamentsEntity = append(tournamentsEntity, tournamentEntity)
+	}
+	return tournamentsEntity, nil
+}
+
+func (sr *TournamentGORMRepository) FindByID(id uint) (*tournament_entity.Tournament, error) {
+	var tournament *database.Tournament
+
+	if err := sr.DB.Where("id = ?", id).First(&tournament).Error; err != nil {
+		log.Println("Tournament not found")
+		return nil, err
+	}
+
+	participantsEntity, err := sr.IParticipationRepository.FindByTournamentID(id)
+	if err != nil {
+		log.Println("Error finding participants: ", err)
+		return nil, err
+	}
+
+	battles, err := sr.IBattleRepository.FindByTournamentID(id)
+	if err != nil {
+		log.Println("Error finding battles: ", err)
+		return nil, err
+	}
+
+	return tournament_entity.NewTournament(tournament.ID, tournament.Finished, tournament.ChampionID, participantsEntity, battles), nil
 }

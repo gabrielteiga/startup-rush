@@ -4,10 +4,10 @@ type Participation struct {
 	ID           uint `json:"id,omitempty"`
 	StartupID    uint `json:"startupId"`
 	TournamentID uint `json:"tournamentId"`
-	Score        uint `json:"score"`
+	Score        int  `json:"score"`
 }
 
-func NewParticipation(id, score, startupId, tournamentId uint) *Participation {
+func NewParticipation(id, startupId, tournamentId uint, score int) *Participation {
 	return &Participation{
 		ID:           id,
 		StartupID:    startupId,

@@ -24,3 +24,8 @@ func (ss *StartupService) List() []*startup_entity.Startup {
 	startups := ss.StartupRepository.List()
 	return startups
 }
+
+func (ss *StartupService) FindByIDs(ids []uint) []*startup_entity.Startup {
+	startups := ss.StartupRepository.FindByIDs(ids)
+	return startups
+}
