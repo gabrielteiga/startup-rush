@@ -65,7 +65,7 @@ type Battle struct {
 
 type Events struct {
 	gorm.Model
-	Name  string `gorm:"not null"`
+	Name  string `gorm:"size:255;not null;uniqueIndex"`
 	Score int    `gorm:"not null"`
 
 	Battles []BattlesEvents `gorm:"foreignKey:EventID"`

@@ -43,7 +43,7 @@ func InitConnection() *DBGormAdapter {
 }
 
 func (db *DBGormAdapter) Migrate() error {
-	return db.DB.AutoMigrate(
+	err := db.DB.AutoMigrate(
 		&Startup{},
 		&Tournament{},
 		&StartupsTournaments{},
@@ -51,4 +51,17 @@ func (db *DBGormAdapter) Migrate() error {
 		&Events{},
 		&BattlesEvents{},
 	)
+	if err != nil {
+		log.Println("Error migrating database: ", err)
+		return err
+	}
+
+	err = SeedEvents(db.DB)
+	if err != nil {
+		log.Println("Error seeding events: ", err)
+		return err
+	}
+
+	log.Println("Database migrated successfully")
+	return nil
 }
