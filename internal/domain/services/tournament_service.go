@@ -5,6 +5,7 @@ import (
 	"math/rand/v2"
 
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/battle_entity"
+	"github.com/gabrielteiga/startup-rush/internal/domain/entities/event_entity"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/participations_entity"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/startup_entity"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/tournament_entity"
@@ -15,14 +16,22 @@ type TournamentService struct {
 	StartupRepository        startup_entity.IStartupRepository
 	BattleRepository         battle_entity.IBattleRepository
 	ParticipationsRepository participations_entity.IParticipationRepository
+	EventRepository          event_entity.IEventRepository
 }
 
-func NewTournamentService(tournamentRepository tournament_entity.ITournamentRepository, startupRepository startup_entity.IStartupRepository, battleRepository battle_entity.IBattleRepository, participationsRepository participations_entity.IParticipationRepository) *TournamentService {
+func NewTournamentService(
+	tournamentRepository tournament_entity.ITournamentRepository,
+	startupRepository startup_entity.IStartupRepository,
+	battleRepository battle_entity.IBattleRepository,
+	participationsRepository participations_entity.IParticipationRepository,
+	eventRepository event_entity.IEventRepository,
+) *TournamentService {
 	return &TournamentService{
 		TournamentRepository:     tournamentRepository,
 		StartupRepository:        startupRepository,
 		BattleRepository:         battleRepository,
 		ParticipationsRepository: participationsRepository,
+		EventRepository:          eventRepository,
 	}
 }
 
@@ -120,4 +129,22 @@ func (ts *TournamentService) FindParticipantsByTournamentID(tournamentID uint) [
 	}
 
 	return startups
+}
+
+func (ts *TournamentService) GetBattleByID(id uint) (*battle_entity.Battle, error) {
+	battle, err := ts.BattleRepository.FindByID(id)
+	if err != nil {
+		log.Println("Error finding battle:", err)
+		return nil, err
+	}
+	return battle, nil
+}
+
+func (ts *TournamentService) GetEvents() ([]*event_entity.Event, error) {
+	events, err := ts.EventRepository.List()
+	if err != nil {
+		log.Println("Error finding events:", err)
+		return nil, err
+	}
+	return events, nil
 }

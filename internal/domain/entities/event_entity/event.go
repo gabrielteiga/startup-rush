@@ -3,7 +3,7 @@ package event_entity
 type Event struct {
 	ID    uint   `json:"id"`
 	Name  string `json:"name"`
-	Score int    `json:"score"`
+	Score int    `json:"score,omitempty"`
 }
 
 func NewEvent(id uint, name string, score int) *Event {

@@ -29,12 +29,12 @@ func (er *EventsGORMRepository) Create(name string, score int) *event_entity.Eve
 	return event_entity.NewEvent(event.ID, event.Name, event.Score)
 }
 
-func (er *EventsGORMRepository) List() []*event_entity.Event {
+func (er *EventsGORMRepository) List() ([]*event_entity.Event, error) {
 	var events []database.Events
 
 	err := er.DB.Select("id, name, score").Find(&events).Error
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	var eventEntities []*event_entity.Event
@@ -43,5 +43,5 @@ func (er *EventsGORMRepository) List() []*event_entity.Event {
 		eventEntities = append(eventEntities, event)
 	}
 
-	return eventEntities
+	return eventEntities, nil
 }
