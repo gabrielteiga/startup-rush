@@ -84,5 +84,7 @@ func (pr *ParticipationsGORMRepository) AddScore(tournamentID, startupID uint, s
 
 	participation.Score += score
 
-	return pr.DB.Model(&database.StartupsTournaments{}).Select("score").Updates(participation).Error
+	return pr.DB.Model(&database.StartupsTournaments{}).
+		Where("tournament_id = ? AND startup_id = ?", tournamentID, startupID).
+		Select("score").Updates(participation).Error
 }
