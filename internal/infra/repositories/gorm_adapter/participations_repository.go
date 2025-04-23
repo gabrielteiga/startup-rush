@@ -1,6 +1,8 @@
 package gorm_adapter
 
 import (
+	"log"
+
 	"github.com/gabrielteiga/startup-rush/database"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/battle_entity"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/participations_entity"
@@ -71,4 +73,16 @@ func (pr *ParticipationsGORMRepository) FindByStartupID(startupID uint) ([]*part
 	}
 
 	return participationsEntity, nil
+}
+
+func (pr *ParticipationsGORMRepository) AddScore(tournamentID, startupID uint, score int) error {
+	var participation database.StartupsTournaments
+	if err := pr.DB.Where("tournament_id = ? AND startup_id = ?", tournamentID, startupID).First(&participation).Error; err != nil {
+		log.Println("Error finding participation:", err)
+		return err
+	}
+
+	participation.Score += score
+
+	return pr.DB.Model(&database.StartupsTournaments{}).Select("score").Updates(participation).Error
 }

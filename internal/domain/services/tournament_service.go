@@ -1,9 +1,11 @@
 package services
 
 import (
+	"fmt"
 	"log"
 	"math/rand/v2"
 
+	"github.com/gabrielteiga/startup-rush/database"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/battle_entity"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/battle_events_entity"
 	"github.com/gabrielteiga/startup-rush/internal/domain/entities/event_entity"
@@ -160,21 +162,44 @@ func (ts *TournamentService) Battle(battleID uint, events map[uint][]uint) (any,
 		return nil, err
 	}
 
+	if battle.Finished {
+		log.Println("Battle already finished")
+		return nil, fmt.Errorf("battle already finished")
+	}
+
 	err = ts.registerAndCheckEvents(battle, events)
 	if err != nil {
 		log.Println("Error registering events:", err)
 		return nil, err
 	}
 
-	// We are using here the gorm model. Need to change this to the entity model.
+	// battleDatabase -> We are using here the gorm model. Need to change this to the entity model.
 	battleDatabase, err := ts.BattleEventRepository.GetBattleDatabaseWithEvents(battle.ID)
 	if err != nil {
 		log.Println("Error finding battle:", err)
 		return nil, err
 	}
 
-	return battleDatabase, nil
+	err = ts.defineBattleWinner(battleDatabase)
+	if err != nil {
+		log.Println("Error defining battle winner:", err)
+		return nil, err
+	}
 
+	if err := ts.ParticipationsRepository.AddScore(battleDatabase.TournamentID, *battleDatabase.WinnerID, 30); err != nil {
+		return nil, fmt.Errorf("error adding victory bonus: %w", err)
+	}
+
+	if err := ts.advancePhaseIfNeeded(battleDatabase); err != nil {
+		return nil, fmt.Errorf("error advancing phase: %w", err)
+	}
+
+	BattleUpdated, err := ts.BattleRepository.FindByID(battleID)
+	if err != nil {
+		return nil, fmt.Errorf("error reloading battle: %w", err)
+	}
+
+	return BattleUpdated, nil
 }
 
 func (ts *TournamentService) registerAndCheckEvents(battle *battle_entity.Battle, events map[uint][]uint) error {
@@ -185,6 +210,111 @@ func (ts *TournamentService) registerAndCheckEvents(battle *battle_entity.Battle
 				log.Println("Error creating battle event:", err)
 				return err
 			}
+		}
+	}
+	return nil
+}
+
+// Using GORM Model
+func (ts *TournamentService) defineBattleWinner(battleDatabase *database.Battle) error {
+	score1, score2 := ts.calculateScores(battleDatabase)
+
+	battleDatabase.ScoreStartup1 = &score1
+	battleDatabase.ScoreStartup2 = &score2
+	battleDatabase.Finished = true
+
+	var winnerID uint
+	if score1 > score2 {
+		winnerID = battleDatabase.Startup1ID
+	} else {
+		winnerID = battleDatabase.Startup2ID
+	}
+	battleDatabase.WinnerID = &winnerID
+
+	battleEntity := battle_entity.NewBattle(
+		battleDatabase.ID,
+		battleDatabase.TournamentID,
+		battleDatabase.Startup1ID,
+		battleDatabase.Startup2ID,
+		battleDatabase.ScoreStartup1,
+		battleDatabase.ScoreStartup2,
+		battleDatabase.Finished,
+		battleDatabase.WinnerID,
+		battleDatabase.BattleParentID,
+		battleDatabase.BattleChildren1ID,
+		battleDatabase.BattleChildren2ID,
+		battleDatabase.Phase,
+	)
+	if err := ts.BattleRepository.SaveBattle(battleEntity); err != nil {
+		return fmt.Errorf("error saving battle result: %w", err)
+	}
+	return nil
+}
+
+// Using GORM Model
+func (ts *TournamentService) calculateScores(battleDatabase *database.Battle) (int, int) {
+	var score1, score2 int
+	for _, event := range battleDatabase.BattleEvents {
+		if event.StartupID == battleDatabase.Startup1ID {
+			score1 += event.Event.Score
+		} else {
+			score2 += event.Event.Score
+		}
+	}
+
+	// Shark Fight
+	if score1 == score2 {
+		if rand.IntN(2) == 0 {
+			score1 += 2
+		} else {
+			score2 += 2
+		}
+	}
+
+	return score1, score2
+}
+
+// Using GORM Model
+func (ts *TournamentService) advancePhaseIfNeeded(GORMBattle *database.Battle) error {
+	phase := GORMBattle.Phase
+	tournamentID := GORMBattle.TournamentID
+
+	pending, err := ts.BattleRepository.CountByPhase(tournamentID, phase, false)
+	if err != nil {
+		return err
+	}
+	if pending > 0 {
+		return nil
+	}
+
+	if phase == battle_entity.PhaseFinal {
+		_, err := ts.TournamentRepository.Finish(tournamentID, GORMBattle.WinnerID)
+		return err
+	}
+
+	var nextPhase battle_entity.BattlePhase
+	switch phase {
+	case battle_entity.PhaseQuarterFinal:
+		nextPhase = battle_entity.PhaseSemiFinal
+	case battle_entity.PhaseSemiFinal:
+		nextPhase = battle_entity.PhaseFinal
+	}
+
+	winners, err := ts.BattleRepository.FindWinnersByPhase(tournamentID, phase)
+	if err != nil {
+		return err
+	}
+	for i := 0; i < len(winners); i += 2 {
+		_, err := ts.BattleRepository.Create(
+			tournamentID,
+			winners[i],
+			winners[i+1],
+			&winners[i],
+			&winners[i+1],
+			nextPhase,
+		)
+		if err != nil {
+			return err
 		}
 	}
 	return nil

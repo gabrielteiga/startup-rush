@@ -94,3 +94,47 @@ func (br *BattleGORMRepository) FindByTournamentID(tournamentID uint) ([]*battle
 
 	return battlesEntity, nil
 }
+
+func (br *BattleGORMRepository) SaveBattle(battle *battle_entity.Battle) error {
+	ModelBattle := &database.Battle{
+		Model:             gorm.Model{ID: battle.ID},
+		ScoreStartup1:     battle.ScoreStartup1,
+		ScoreStartup2:     battle.ScoreStartup2,
+		Finished:          battle.Finished,
+		WinnerID:          battle.WinnerID,
+		BattleParentID:    battle.BattleParentID,
+		BattleChildren1ID: battle.BattleChildren1ID,
+		BattleChildren2ID: battle.BattleChildren2ID,
+		Phase:             battle.Phase,
+	}
+
+	if err := br.DB.Model(ModelBattle).Updates(ModelBattle).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (br *BattleGORMRepository) CountByPhase(tournamentID uint, phase battle_entity.BattlePhase, finished bool) (int64, error) {
+	var count int64
+	if err := br.DB.Model(&database.Battle{}).
+		Where("tournament_id = ? AND phase = ? AND finished = ?", tournamentID, phase, finished).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (br *BattleGORMRepository) FindWinnersByPhase(tournamentID uint, phase battle_entity.BattlePhase) ([]uint, error) {
+	var battles []database.Battle
+	if err := br.DB.Where("tournament_id = ? AND phase = ? AND finished = ?", tournamentID, phase, true).Find(&battles).Error; err != nil {
+		return nil, err
+	}
+
+	var winners []uint
+	for _, battle := range battles {
+		if battle.WinnerID != nil {
+			winners = append(winners, *battle.WinnerID)
+		}
+	}
+	return winners, nil
+}

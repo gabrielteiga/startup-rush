@@ -25,11 +25,11 @@ func NewTournamentGORMRepository(db *gorm.DB, participationRepository participat
 	}
 }
 
-func (sr *TournamentGORMRepository) Create(startups []*startup_entity.Startup) (*tournament_entity.Tournament, error) {
+func (tr *TournamentGORMRepository) Create(startups []*startup_entity.Startup) (*tournament_entity.Tournament, error) {
 	var tournament *database.Tournament
 	var participantsEntity []*participations_entity.Participation
 
-	err := sr.DB.Transaction(func(transaction *gorm.DB) error {
+	err := tr.DB.Transaction(func(transaction *gorm.DB) error {
 		tournament = &database.Tournament{
 			Finished: false,
 		}
@@ -64,9 +64,9 @@ func (sr *TournamentGORMRepository) Create(startups []*startup_entity.Startup) (
 	return tournament_entity.NewTournament(tournament.ID, tournament.Finished, tournament.ChampionID, participantsEntity, nil), nil
 }
 
-func (sr *TournamentGORMRepository) List() ([]*tournament_entity.Tournament, error) {
+func (tr *TournamentGORMRepository) List() ([]*tournament_entity.Tournament, error) {
 	var tournaments []database.Tournament
-	if err := sr.DB.
+	if err := tr.DB.
 		Preload("Startups").
 		Preload("Battles").
 		Preload("Battles.Startup1").
@@ -79,13 +79,13 @@ func (sr *TournamentGORMRepository) List() ([]*tournament_entity.Tournament, err
 
 	var tournamentsEntity []*tournament_entity.Tournament
 	for i := range tournaments {
-		participants, err := sr.IParticipationRepository.FindByTournamentID(tournaments[i].ID)
+		participants, err := tr.IParticipationRepository.FindByTournamentID(tournaments[i].ID)
 		if err != nil {
 			log.Println("Error finding participants: ", err)
 			return nil, err
 		}
 
-		battles, err := sr.IBattleRepository.FindByTournamentID(tournaments[i].ID)
+		battles, err := tr.IBattleRepository.FindByTournamentID(tournaments[i].ID)
 		if err != nil {
 			log.Println("Error finding battles: ", err)
 			return nil, err
@@ -104,25 +104,47 @@ func (sr *TournamentGORMRepository) List() ([]*tournament_entity.Tournament, err
 	return tournamentsEntity, nil
 }
 
-func (sr *TournamentGORMRepository) FindByID(id uint) (*tournament_entity.Tournament, error) {
+func (tr *TournamentGORMRepository) FindByID(id uint) (*tournament_entity.Tournament, error) {
 	var tournament *database.Tournament
 
-	if err := sr.DB.Where("id = ?", id).First(&tournament).Error; err != nil {
+	if err := tr.DB.Where("id = ?", id).First(&tournament).Error; err != nil {
 		log.Println("Tournament not found")
 		return nil, err
 	}
 
-	participantsEntity, err := sr.IParticipationRepository.FindByTournamentID(id)
+	participantsEntity, err := tr.IParticipationRepository.FindByTournamentID(id)
 	if err != nil {
 		log.Println("Error finding participants: ", err)
 		return nil, err
 	}
 
-	battles, err := sr.IBattleRepository.FindByTournamentID(id)
+	battles, err := tr.IBattleRepository.FindByTournamentID(id)
 	if err != nil {
 		log.Println("Error finding battles: ", err)
 		return nil, err
 	}
 
 	return tournament_entity.NewTournament(tournament.ID, tournament.Finished, tournament.ChampionID, participantsEntity, battles), nil
+}
+
+func (tr *TournamentGORMRepository) Finish(tournamentID uint, championID *uint) (*tournament_entity.Tournament, error) {
+	tournament := &database.Tournament{
+		Model:      gorm.Model{ID: tournamentID},
+		Finished:   true,
+		ChampionID: championID,
+	}
+
+	if err := tr.DB.Model(tournament).Updates(tournament).Error; err != nil {
+		return nil, err
+	}
+
+	tournamentEntity := tournament_entity.NewTournament(
+		tournament.ID,
+		tournament.Finished,
+		tournament.ChampionID,
+		nil,
+		nil,
+	)
+
+	return tournamentEntity, nil
 }
