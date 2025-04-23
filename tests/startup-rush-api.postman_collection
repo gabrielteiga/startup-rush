@@ -1,0 +1,280 @@
+{
+	"info": {
+		"_postman_id": "f3b8eb41-ca50-4677-ad3d-a8bc5c427596",
+		"name": "DELL Startup Rush API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28204374"
+	},
+	"item": [
+		{
+			"name": "startup",
+			"item": [
+				{
+					"name": "startup creation",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\":\"GT Software Solutions\",\r\n    \"slogan\":\"keep trying!\",\r\n    \"foundation\":\"2025-02-22T00:00:00Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/startups",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"startups"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "startup list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/api/startups",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"startups"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "tournament",
+			"item": [
+				{
+					"name": "battles",
+					"item": [
+						{
+							"name": "battles get by tournament  id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/api/tournaments/1",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"tournaments",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "battles get by id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/api/tournaments/battle/2",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"tournaments",
+										"battle",
+										"2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "battle start",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"battle\": [\r\n        { \"startupId\": 1, \"eventIds\": [1, 3, 5] },\r\n        { \"startupId\": 3, \"eventIds\": [2, 4] }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/api/tournaments/battle/9",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"tournaments",
+										"battle",
+										"9"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "startup list by tournament id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/api/tournaments/startups/2",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"tournaments",
+								"startups",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "tournament creation",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"startupsIDs\":[\r\n        1,\r\n        2,\r\n        3,\r\n        4,\r\n        5,\r\n        6,\r\n        7,\r\n        8\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/tournaments",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"tournaments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "tournament list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/api/tournaments",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"tournaments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "tournament get by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/api/tournaments/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"tournaments",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "tournament ranking by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/api/tournaments/ranking/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"tournaments",
+								"ranking",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "tournament start by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/api/tournaments/start/2",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"tournaments",
+								"start",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "health",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/api/health",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"health"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
