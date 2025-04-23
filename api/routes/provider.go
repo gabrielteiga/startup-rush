@@ -44,5 +44,6 @@ func Provide() map[string]RouteInterface {
 		"GET /api/tournaments/startups/": startup_controller.NewGetStartupsByTournamentID(TournamentService, StartupService),
 		"GET /api/tournaments/battle/":   battle_controller.NewGetBattleByID(TournamentService),
 		"POST /api/tournaments/battle/":  battle_controller.NewBattleTournament(TournamentService),
+		"GET /api/tournaments/ranking/":  tournament_controller.NewGetRankingByTournamentID(TournamentService),
 	}
 }

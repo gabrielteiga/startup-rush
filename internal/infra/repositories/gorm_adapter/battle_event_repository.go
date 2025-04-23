@@ -48,3 +48,20 @@ func (ber *BattleEventGORMRepository) GetBattleDatabaseWithEvents(battleID uint)
 	}
 	return battle, nil
 }
+
+func (ber *BattleEventGORMRepository) CountEventsByTournament(tournamentID uint) ([]*battle_events_entity.EventStat, error) {
+	var events []*battle_events_entity.EventStat
+	if err := ber.DB.
+		Table("battle_events be").
+		Select("be.startup_id AS startup_id, e.name AS event_name, COUNT(*) AS total").
+		Joins("JOIN events e ON e.id = be.event_id").
+		Joins("JOIN battles b ON b.id = be.battle_id").
+		Where("b.tournament_id = ? AND be.checked = ?", tournamentID, true).
+		Group("be.startup_id, e.name").
+		Scan(&events).
+		Error; err != nil {
+		return nil, err
+	}
+
+	return events, nil
+}

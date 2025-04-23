@@ -319,3 +319,56 @@ func (ts *TournamentService) advancePhaseIfNeeded(GORMBattle *database.Battle) e
 	}
 	return nil
 }
+
+type EventCount struct {
+	EventName string `json:"eventName"`
+	Count     int    `json:"count"`
+}
+
+type RankingEntry struct {
+	StartupID   uint         `json:"startupId"`
+	Name        string       `json:"name"`
+	Slogan      string       `json:"slogan"`
+	Score       int          `json:"score"`
+	EventCounts []EventCount `json:"events"`
+}
+
+func (ts *TournamentService) GetRanking(tournamentID uint) ([]*RankingEntry, error) {
+	participants, err := ts.ParticipationsRepository.FindRankingByTournamentID(tournamentID)
+	if err != nil {
+		log.Println("Error finding participants:", err)
+		return nil, err
+	}
+
+	eventStats, err := ts.BattleEventRepository.CountEventsByTournament(tournamentID)
+	if err != nil {
+		log.Println("Error counting events:", err)
+		return nil, err
+	}
+
+	var ranking []*RankingEntry
+	for _, participant := range participants {
+		startup := ts.StartupRepository.FindByID(participant.StartupID)
+		if startup == nil {
+			log.Println("Error finding startup:", err)
+			return nil, err
+		}
+
+		var eventCounts []EventCount
+		for _, eventStat := range eventStats {
+			eventCounts = append(eventCounts, EventCount{
+				EventName: eventStat.EventName,
+				Count:     eventStat.Total,
+			})
+		}
+
+		ranking = append(ranking, &RankingEntry{
+			StartupID:   participant.StartupID,
+			Name:        startup.Name,
+			Slogan:      startup.Slogan,
+			Score:       participant.Score,
+			EventCounts: eventCounts,
+		})
+	}
+	return ranking, nil
+}

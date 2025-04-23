@@ -88,3 +88,18 @@ func (pr *ParticipationsGORMRepository) AddScore(tournamentID, startupID uint, s
 		Where("tournament_id = ? AND startup_id = ?", tournamentID, startupID).
 		Select("score").Updates(participation).Error
 }
+
+func (pr *ParticipationsGORMRepository) FindRankingByTournamentID(tournamentID uint) ([]*participations_entity.Participation, error) {
+	var participations []database.StartupsTournaments
+
+	if err := pr.DB.Where("tournament_id = ?", tournamentID).Order("score desc").Find(&participations).Error; err != nil {
+		return nil, err
+	}
+
+	var participationsEntity []*participations_entity.Participation
+	for _, participation := range participations {
+		participationsEntity = append(participationsEntity, participations_entity.NewParticipation(participation.ID, participation.StartupID, participation.TournamentID, participation.Score))
+	}
+
+	return participationsEntity, nil
+}

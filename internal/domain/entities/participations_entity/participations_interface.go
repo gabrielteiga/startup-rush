@@ -6,4 +6,5 @@ type IParticipationRepository interface {
 	FindByTournamentID(tournamentID uint) ([]*Participation, error)
 	FindByStartupID(startupID uint) ([]*Participation, error)
 	AddScore(tournamentID, startupID uint, score int) error
+	FindRankingByTournamentID(tournamentID uint) ([]*Participation, error)
 }
