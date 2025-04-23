@@ -6,3 +6,6 @@
 
 # Docker database data
 /docker/data
+
+# Frontend
+/website
