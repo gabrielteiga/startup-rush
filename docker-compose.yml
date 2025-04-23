@@ -1,5 +1,14 @@
 version: "3.8"
 services:
+  frontend:
+    build: ./website/startup-rush-react
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./website/startup-rush-react:/app
+      - /app/node_modules
+    depends_on:
+      - backend
   backend:
     build: .
     ports:
