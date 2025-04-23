@@ -52,7 +52,7 @@ func (ber *BattleEventGORMRepository) GetBattleDatabaseWithEvents(battleID uint)
 func (ber *BattleEventGORMRepository) CountEventsByTournament(tournamentID uint) ([]*battle_events_entity.EventStat, error) {
 	var events []*battle_events_entity.EventStat
 	if err := ber.DB.
-		Table("battle_events be").
+		Table("battles_events be").
 		Select("be.startup_id AS startup_id, e.name AS event_name, COUNT(*) AS total").
 		Joins("JOIN events e ON e.id = be.event_id").
 		Joins("JOIN battles b ON b.id = be.battle_id").

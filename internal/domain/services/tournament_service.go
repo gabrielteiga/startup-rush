@@ -346,6 +346,14 @@ func (ts *TournamentService) GetRanking(tournamentID uint) ([]*RankingEntry, err
 		return nil, err
 	}
 
+	eventMap := make(map[uint][]EventCount)
+	for _, eventStat := range eventStats {
+		eventMap[eventStat.StartupID] = append(eventMap[eventStat.StartupID], EventCount{
+			EventName: eventStat.EventName,
+			Count:     eventStat.Total,
+		})
+	}
+
 	var ranking []*RankingEntry
 	for _, participant := range participants {
 		startup := ts.StartupRepository.FindByID(participant.StartupID)
@@ -354,20 +362,12 @@ func (ts *TournamentService) GetRanking(tournamentID uint) ([]*RankingEntry, err
 			return nil, err
 		}
 
-		var eventCounts []EventCount
-		for _, eventStat := range eventStats {
-			eventCounts = append(eventCounts, EventCount{
-				EventName: eventStat.EventName,
-				Count:     eventStat.Total,
-			})
-		}
-
 		ranking = append(ranking, &RankingEntry{
 			StartupID:   participant.StartupID,
 			Name:        startup.Name,
 			Slogan:      startup.Slogan,
 			Score:       participant.Score,
-			EventCounts: eventCounts,
+			EventCounts: eventMap[participant.StartupID],
 		})
 	}
 	return ranking, nil
