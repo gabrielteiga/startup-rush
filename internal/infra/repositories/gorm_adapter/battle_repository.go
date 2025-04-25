@@ -124,17 +124,20 @@ func (br *BattleGORMRepository) CountByPhase(tournamentID uint, phase battle_ent
 	return count, nil
 }
 
-func (br *BattleGORMRepository) FindWinnersByPhase(tournamentID uint, phase battle_entity.BattlePhase) ([]uint, error) {
+func (br *BattleGORMRepository) FindWinnersAndBattlesByPhase(tournamentID uint, phase battle_entity.BattlePhase) ([]battle_entity.WinnerBattleMap, error) {
 	var battles []database.Battle
 	if err := br.DB.Where("tournament_id = ? AND phase = ? AND finished = ?", tournamentID, phase, true).Find(&battles).Error; err != nil {
 		return nil, err
 	}
 
-	var winners []uint
+	var winnersBattlesMap []battle_entity.WinnerBattleMap
 	for _, battle := range battles {
 		if battle.WinnerID != nil {
-			winners = append(winners, *battle.WinnerID)
+			winnersBattlesMap = append(winnersBattlesMap, battle_entity.WinnerBattleMap{
+				WinnerID: *battle.WinnerID,
+				BattleID: battle.ID,
+			})
 		}
 	}
-	return winners, nil
+	return winnersBattlesMap, nil
 }

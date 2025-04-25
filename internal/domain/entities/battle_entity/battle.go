@@ -19,6 +19,11 @@ type Battle struct {
 	ChildrenBattles []*Battle   `json:"childrenBattles,omitempty"`
 }
 
+type WinnerBattleMap struct {
+	WinnerID uint
+	BattleID uint
+}
+
 type BattlePhase string
 
 const (

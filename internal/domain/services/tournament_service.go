@@ -300,17 +300,17 @@ func (ts *TournamentService) advancePhaseIfNeeded(GORMBattle *database.Battle) e
 		nextPhase = battle_entity.PhaseFinal
 	}
 
-	winners, err := ts.BattleRepository.FindWinnersByPhase(tournamentID, phase)
+	winnersBattlesMap, err := ts.BattleRepository.FindWinnersAndBattlesByPhase(tournamentID, phase)
 	if err != nil {
 		return err
 	}
-	for i := 0; i < len(winners); i += 2 {
+	for i := 0; i < len(winnersBattlesMap); i += 2 {
 		_, err := ts.BattleRepository.Create(
 			tournamentID,
-			winners[i],
-			winners[i+1],
-			&winners[i],
-			&winners[i+1],
+			winnersBattlesMap[i].WinnerID,
+			winnersBattlesMap[i+1].WinnerID,
+			&winnersBattlesMap[i].BattleID,
+			&winnersBattlesMap[i+1].BattleID,
 			nextPhase,
 		)
 		if err != nil {

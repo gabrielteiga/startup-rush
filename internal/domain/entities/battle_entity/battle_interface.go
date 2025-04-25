@@ -6,5 +6,5 @@ type IBattleRepository interface {
 	FindByTournamentID(tournamentID uint) ([]*Battle, error)
 	SaveBattle(battle *Battle) error
 	CountByPhase(tournamentID uint, phase BattlePhase, finished bool) (int64, error)
-	FindWinnersByPhase(tournamentID uint, phase BattlePhase) ([]uint, error)
+	FindWinnersAndBattlesByPhase(tournamentID uint, phase BattlePhase) ([]WinnerBattleMap, error)
 }
