@@ -2,7 +2,7 @@
 /tmp
 
 # Dev files
-.air.toml
+# .air.toml
 
 # Docker database data
 /docker/data
