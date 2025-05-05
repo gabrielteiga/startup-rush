@@ -331,6 +331,7 @@ type RankingEntry struct {
 	Slogan      string       `json:"slogan"`
 	Score       int          `json:"score"`
 	EventCounts []EventCount `json:"events"`
+	Battles     []*battle_entity.Battle `json:"battles"`
 }
 
 func (ts *TournamentService) GetRanking(tournamentID uint) ([]*RankingEntry, error) {
@@ -354,6 +355,18 @@ func (ts *TournamentService) GetRanking(tournamentID uint) ([]*RankingEntry, err
 		})
 	}
 
+	battles, err := ts.BattleRepository.FindByTournamentID(tournamentID)
+	if err != nil {
+		log.Println("Error finding battles:", err)
+		return nil, err
+	}
+
+	battleMap := make(map[uint][]*battle_entity.Battle)
+	for _, battle := range battles {
+		battleMap[battle.Startup1ID] = append(battleMap[battle.Startup1ID], battle)
+		battleMap[battle.Startup2ID] = append(battleMap[battle.Startup2ID], battle)
+	}
+
 	var ranking []*RankingEntry
 	for _, participant := range participants {
 		startup := ts.StartupRepository.FindByID(participant.StartupID)
@@ -368,6 +381,7 @@ func (ts *TournamentService) GetRanking(tournamentID uint) ([]*RankingEntry, err
 			Slogan:      startup.Slogan,
 			Score:       participant.Score,
 			EventCounts: eventMap[participant.StartupID],
+			Battles:     battleMap[participant.StartupID],
 		})
 	}
 	return ranking, nil
